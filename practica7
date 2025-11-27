@@ -1,0 +1,69 @@
+CREATE TABLE Students (
+    student_id SERIAL PRIMARY KEY, -- Уникальный идентификатор студента
+    full_name VARCHAR(255) NOT NULL, -- Полное имя студента
+    email VARCHAR(255) UNIQUE NOT NULL, -- Электронная почта студента (должна быть уникальной)
+    start_year INT -- Год поступления студента
+);
+
+CREATE TABLE Courses (
+    course_id SERIAL PRIMARY KEY, -- Уникальный идентификатор курса
+    course_name VARCHAR(255) NOT NULL, -- Название курса
+    credits INT CHECK (credits > 0) -- Количество зачетных единиц курса (должно быть больше 0)
+);
+
+CREATE TABLE Enrollments (
+    student_id INT REFERENCES Students(student_id) ON DELETE CASCADE, -- Ссылка на ID студента (внешний ключ)
+    course_id INT REFERENCES Courses(course_id) ON DELETE CASCADE, -- Ссылка на ID курса (внешний ключ)
+    grade CHAR(1), -- Оценка студента за курс (например, 'A', 'B', 'C')
+    PRIMARY KEY (student_id, course_id)
+);
+--Задание 1: Наполнение таблиц (INSERT)
+--1.1 Добавление студентов
+INSERT INTO Students VALUES (DEFAULT, 'Алексей Смирнов', 'Lexa@gmail.com', 2021);
+INSERT INTO Students VALUES (DEFAULT, 'Елена Кузнецова', 'Elena@mail.ru', 2022);
+INSERT INTO Students VALUES (DEFAULT, 'Дмитрий Новиков', 'Novikov@mail.ru', 2021);
+INSERT INTO Students VALUES (DEFAULT, 'Ольга Морозова', 'Olga_Morozova@mail.ru', 2023);
+--1.2 Добавление курсов
+INSERT INTO Courses VALUES (DEFAULT,'Введение в программирование','5');
+
+INSERT INTO Courses VALUES (DEFAULT,'Базы данных','4');
+
+INSERT INTO Courses VALUES (DEFAULT,'Веб-технологии','4');
+--1.3 Запись студентов на курсы
+INSERT INTO Enrollments VALUES ('1','2','A');
+INSERT INTO Enrollments VALUES ('3','1',NULL);
+INSERT INTO Enrollments VALUES ('3','2',NULL);
+INSERT INTO Enrollments VALUES ('3','3',NULL);
+INSERT INTO Enrollments VALUES ('2','2','B');
+INSERT INTO Enrollments VALUES ('2','3','A');
+--Задание 2: Обновление данных (UPDATE)
+--2.1 Изменение email
+UPDATE STUDENTS SET email = 'elena.kuznetsova@newmail.com' WHERE email = 'Elena@mail.ru';
+--2.2 Проставление оценки
+
+UPDATE Enrollments SET grade = 'A' WHERE course_id = '1' AND student_id = '3';
+
+--Задание 3: Удаление данных (DELETE)
+DELETE FROM Students WHERE email = 'Elena@mail.ru';
+
+--                  Практика 7. Простые запросы на выборку
+--Задание 1: Вывести полный список студентов
+SELECT * FROM Students;
+--Задание 2: Вывести названия и "стоимость" курсов
+SELECT course_name, credits FROM courses;
+--Задание 3: Найти студентов, поступивших в 2021 году
+SELECT * FROM Students WHERE start_year = 2021;
+--Задание 4: Найти курс с "стоимостью" больше 4 кредитов
+SELECT * FROM Courses WHERE credits > 4;
+--Задание 5: Найти студента по его email
+SELECT * FROM Students where email = 'elena.kuznetsova@newmail.com';
+--Задание 6: Найти всех студентов с именем "Дмитрий"
+SELECT * FROM Students WHERE full_name LIKE 'Дмитрий%';
+--Задание 7: Найти все зачисления без оценки
+SELECT * FROM Enrollments WHERE grade IS NULL;
+--Задание 8: Отсортировать курсы по названию
+SELECT * from courses ORDER BY course_name;
+--Задание 9: Показать студентов в порядке зачисления
+SELECT * FROM students ORDER BY start_year, full_name;
+--Задание 10: Найти двух "новейших" студентов
+SELECT * FROM students ORDER BY start_year DESC LIMIT 2;
