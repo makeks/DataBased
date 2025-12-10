@@ -1,0 +1,87 @@
+--Задание 1: Приведение к Первой нормальной форме (1НФ)
+--Проблема: Столбец team_members содержит в одной ячейке несколько значений (имена, разделенные запятыми). Это нарушает основное правило 1НФ — атомарность данных.
+CREATE TABLE Projects (
+    project_id INT PRIMARY KEY,
+    project_name VARCHAR(255)
+);
+CREATE TABLE TeamMembers (
+    member_id INT PRIMARY KEY,
+    member_name VARCHAR(255) NOT NULL,
+    project_id INT,
+    FOREIGN KEY (project_id) REFERENCES Projects(project_id)
+);
+
+
+
+--Это если брать из расчёта у одного сотрудника - один проект
+
+--Задание 2: Приведение ко Второй нормальной форме (2НФ)
+--Проблема:Избыточность (если один клиент арендует 10 единиц оборудования, его имя и email повторятся 10 раз)[не находится в 1НФ]
+--Проблема:Наличие частичных зависимостей Имя и email клиента зависят только от части первичного ключа (client_id).Также название оборудования зависит только от части первичного ключа (equipment_id).
+CREATE TABLE Clients (
+    client_id INT PRIMARY KEY,
+    client_name VARCHAR(255),
+    client_email VARCHAR(255)
+);
+
+CREATE TABLE Equipment (
+    equipment_id INT PRIMARY KEY,
+    equipment_name VARCHAR(255)
+);
+CREATE TABLE Rentals (
+    client_id INT,
+    equipment_id INT,
+    rental_date DATE,
+    PRIMARY KEY (client_id, equipment_id),
+    FOREIGN KEY (client_id) REFERENCES Clients(client_id),
+    FOREIGN KEY (equipment_id) REFERENCES Equipment(equipment_id)
+);
+--Задание 3 (со звездочкой): Комплексная нормализация
+--Таблица нарушает 1НФ, потому что столбец assignments_and_grades содержит неатомарные данные.В одной ячейке хранится сложная структура (JSON), представляющая множество пар "название задания — оценка".
+--Для решения этой проблемы Необходимо "развернуть" JSON-поле в отдельные строки. Для этого создадим таблицу для оценок, где каждая строка соответствует одной оценке студента по конкретному заданию на конкретном курсе.
+--Приведение к 1НФ(убираем проблему атомарности)
+CREATE TABLE StudentCourses (
+    student_id INT,
+    course_id INT,
+    student_name VARCHAR(255),
+    course_professor VARCHAR(255),
+    PRIMARY KEY (student_id, course_id)
+);
+
+CREATE TABLE Grades (
+    grade_id INT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    assignment_name VARCHAR(255),
+    grade INT,
+    FOREIGN KEY (student_id, course_id) REFERENCES StudentCourses(student_id, course_id)
+);
+
+--Таблица StudentCourses нарушает 2НФ из-за частичных зависимостей.
+--Приведение к 1НФ(убираем проблему атомарности)
+CREATE TABLE Students (
+    student_id INT PRIMARY KEY,
+    student_name VARCHAR(255)
+);
+
+CREATE TABLE Courses (
+    course_id INT PRIMARY KEY,
+    course_professor VARCHAR(255)
+);
+
+CREATE TABLE StudentEnrollment (
+    student_id INT,
+    course_id INT,
+    PRIMARY KEY (student_id, course_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id)
+);
+
+CREATE TABLE Grades (
+    grade_id INT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    assignment_name VARCHAR(255),
+    grade INT,
+    FOREIGN KEY (student_id, course_id) REFERENCES StudentEnrollment(student_id, course_id)
+);
