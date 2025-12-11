@@ -1,0 +1,51 @@
+--Задание 1: Приведение к 3НФ
+--1)book_id → title, author_name, publisher_id, publisher_name, publisher_city;publisher_id → publisher_name, publisher_city
+--2)Транзитивная зависимость:book_id → publisher_id → (publisher_name, publisher_city)
+CREATE TABLE Publishers (
+    publisher_id INT PRIMARY KEY,
+    publisher_name VARCHAR(255),
+    publisher_city VARCHAR(100)
+);
+CREATE TABLE Books (
+    book_id INT PRIMARY KEY,
+    title VARCHAR(255),
+    author_name VARCHAR(255),
+    publisher_id INT,
+    FOREIGN KEY (publisher_id) REFERENCES Publishers(publisher_id)
+);
+--Задание 2: Приведение к Третьей нормальной форме (3НФ)
+--Зависимости:(race_id, driver_id) → car_model, car_manufacturer, finish_time (полная зависимость от ПК) car_model → car_manufacturer
+--Таблица нарушает 3НФ из-за транзитивной зависимости: car_manufacturer зависит от car_model, который сам является неключевым атрибутом.
+CREATE TABLE Cars (
+    car_model VARCHAR(100) PRIMARY KEY,
+    manufacturer VARCHAR(100) NOT NULL
+);
+CREATE TABLE RaceResults (
+    race_id INT,
+    driver_id INT,
+    car_model VARCHAR(100),
+    finish_time TIME,
+    PRIMARY KEY (race_id, driver_id),
+    FOREIGN KEY (car_model) REFERENCES Cars(car_model)
+);
+
+--Задание 3 (со звездочкой): Приведение к Нормальной форме Бойса-Кодда (НФБК)
+--У нас есть зависимость, где в левой части (event_type) стоит НЕ ключ, а в правой части (room_name) стоит атрибут, который является частью ключа.
+-- 1. Таблица типов мероприятий и комнат (правило: "Презентации → Зал №1")
+CREATE TABLE EventRules (
+    event_type VARCHAR(50) PRIMARY KEY,
+    room_name VARCHAR(100) NOT NULL
+);
+CREATE TABLE Events (
+    event_id INT PRIMARY KEY,
+    event_name VARCHAR(255) NOT NULL UNIQUE,
+    event_type VARCHAR(50) NOT NULL,
+    FOREIGN KEY (event_type) REFERENCES EventRules(event_type)
+);
+CREATE TABLE Bookings (
+    booking_id INT PRIMARY KEY,
+    booking_time DATETIME NOT NULL,
+    event_id INT NOT NULL,
+    FOREIGN KEY (event_id) REFERENCES Events(event_id),
+    UNIQUE KEY unique_time_room (booking_time, event_id)
+);
